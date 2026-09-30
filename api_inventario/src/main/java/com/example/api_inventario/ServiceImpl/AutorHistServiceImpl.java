@@ -2,7 +2,7 @@ package com.example.api_inventario.ServiceImpl;
 
 import java.util.List;
 
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.api_inventario.Model.AutorHist;
@@ -15,8 +15,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor 
 public class AutorHistServiceImpl implements AutorHistService{
 
-    
-    private AutorHistRepository autorHistRepo;
+    @Autowired 
+    private final AutorHistRepository autorHistRepo;
 
     //Metodos get
     public List<AutorHist> getAllAutorHist(){
@@ -26,7 +26,7 @@ public class AutorHistServiceImpl implements AutorHistService{
 
     public AutorHist getAutorHistById(Long id_autorHist){
           return autorHistRepo.findById(id_autorHist)
-                .orElseThrow(() -> new RuntimeException("Comuna no encontrada con id: " + id_autorHist));
+                .orElseThrow(() -> new RuntimeException("Autor hist no encontrada con id: " + id_autorHist));
 
     }; 
 
@@ -57,7 +57,9 @@ public class AutorHistServiceImpl implements AutorHistService{
         // fin comprobacion
 
         //se guarda el nombre
-        autor_existente.setNombre_autor(autor.getNombre_autor());
+        if (autor.getNombre_autor() != null) {
+            autor_existente.setNombre_autor(autor.getNombre_autor());
+        }
 
         return autorHistRepo.save(autor);
 

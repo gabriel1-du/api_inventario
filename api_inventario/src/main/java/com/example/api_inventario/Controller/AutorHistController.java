@@ -13,12 +13,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.example.api_inventario.Model.AutorHist;
 import com.example.api_inventario.Service.AutorHistService;
 
 import lombok.AllArgsConstructor;
 
+@RestController 
 @RequestMapping("/api/AutorHistRequest")
 @AllArgsConstructor 
 public class AutorHistController {
@@ -39,7 +41,7 @@ public class AutorHistController {
 
 
     @GetMapping("/{id_autor}")
-    public ResponseEntity<?> getAutorHistById (@PathVariable Long id_autor){
+    public ResponseEntity<?> getAutorHistById (@PathVariable("id_autor") Long id_autor){
 
         try {
             AutorHist autor_encontrado = autorService.getAutorHistById(id_autor);
@@ -71,11 +73,11 @@ public class AutorHistController {
     };
 
     @PutMapping("/{id_autor}")
-    public ResponseEntity<?> putAutorHist(@PathVariable Long id_autor , AutorHist autor){
+    public ResponseEntity<?> putAutorHist(@PathVariable("id_autor") Long id_autor , @RequestBody AutorHist autor){
 
         try {
                 
-            AutorHist autor_actualizado = autorService.putAutorHist(autor, id_autor);
+            AutorHist autor_actualizado = autorService.putAutorHist(autor, id_autor );
             
             return ResponseEntity.ok(autor_actualizado);
 
@@ -86,7 +88,7 @@ public class AutorHistController {
     };
 
     @DeleteMapping("/{id_autor}")
-    public ResponseEntity<?> deleteAutorHist(@PathVariable Long id_autor){
+    public ResponseEntity<?> deleteAutorHist(@PathVariable("id_autor") Long id_autor){
         
         try{
 
