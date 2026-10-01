@@ -1,5 +1,7 @@
 package com.example.api_inventario.Controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +24,15 @@ public class TipoHIstController {
 
     @Autowired 
     private TipoHistService tipoService;
+
+    // Metodos get
+    @GetMapping("/")
+    public ResponseEntity<List<TipoHist>> getAllTipoHist() {
+        
+        List<TipoHist> tipos = tipoService.getAllTipoHist();
+
+        return ResponseEntity.ok(tipos);
+    }
 
     @GetMapping("/{id_tipo_hist}")
     public ResponseEntity<?> getTipoHistById (@PathVariable("id_tipo_hist") Long id_tipo_hist){
