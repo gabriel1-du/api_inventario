@@ -5,9 +5,11 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -46,7 +48,9 @@ public class TipoHIstController {
             // Retorna la excepcion
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
-    };
+    };  
+
+    // Fin metodos get
 
     @PostMapping("/")
     public ResponseEntity<?> saveTipoHist(@RequestBody TipoHist tipo){
@@ -64,5 +68,34 @@ public class TipoHIstController {
         }
     };
 
+
+    @PutMapping("/{id_tipo_hist}")
+    public ResponseEntity<?> putTipoHist(@PathVariable("id_tipo_hist") Long id_tipo_hist, @RequestBody TipoHist tipo){
+
+        try {
+                
+            TipoHist tipo_actualizado = tipoService.putTipoHist(id_tipo_hist, tipo);
+            
+            return ResponseEntity.ok(tipo_actualizado);
+
+        }catch (Exception e){
+            
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    };
+
+    @DeleteMapping("/{id_tipo_hist}")
+    public ResponseEntity<?> deleteTipoHist(@PathVariable("id_tipo_hist") Long id_tipo_hist){
+        try{
+
+            tipoService.deleteTipoHist(id_tipo_hist);
+            
+            return ResponseEntity.ok("Tipo de historieta eliminado exitosamente");
+
+        } catch(Exception e){
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
 
 }
