@@ -21,7 +21,7 @@ import com.example.api_inventario.Service.AutorHistService;
 import lombok.AllArgsConstructor;
 
 @RestController 
-@RequestMapping("/api/AutorHistRequest")
+@RequestMapping("/api/autorHistRequest")
 @AllArgsConstructor 
 public class AutorHistController {
 
