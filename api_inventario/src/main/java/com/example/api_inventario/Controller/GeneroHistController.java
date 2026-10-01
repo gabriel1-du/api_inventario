@@ -32,7 +32,6 @@ public class GeneroHistController {
     private GeneroHistService generoService;
     
 
-
     //Metodos get
     @GetMapping("/")
     public ResponseEntity<List<GeneroHist>> getAllGeneroHist() {
