@@ -2,18 +2,21 @@ package com.example.api_inventario.Service;
 
 import java.util.List;
 
-
-import com.example.api_inventario.Model.SerieHist;
+import com.example.api_inventario.DTO.SerieHistDTOs.getSerieHistDTO;
+import com.example.api_inventario.DTO.SerieHistDTOs.putSerieHistDTO;
+import com.example.api_inventario.DTO.SerieHistDTOs.saveSerieHistDTO;
 
 public interface SerieHistService {
 
-    public List<SerieHist> getAllSerieHist(); //trae todos los autores de una hist
+    // Metodos Get
+    public List<getSerieHistDTO> getAllSerieHist();
 
-    public SerieHist getSerieHistById(Long id_serierHist); //por id
+    public getSerieHistDTO getSerieHistById(Long id_serie_hist);
+    // Fin Metodos Get
 
-    public SerieHist saveSerieHist(SerieHist serie); // guardar 
+    public getSerieHistDTO saveSerieHist(saveSerieHistDTO serieDto);
 
-    public SerieHist putSerieHist(SerieHist serie, Long id_serie); //actualizar una autorHist
+    public getSerieHistDTO putSerieHist(Long id_serie_hist, putSerieHistDTO serieDto);
 
-    public void deleteSerieHist(Long id);
+    public void deleteSerieHist(Long id_serie_hist);
 }

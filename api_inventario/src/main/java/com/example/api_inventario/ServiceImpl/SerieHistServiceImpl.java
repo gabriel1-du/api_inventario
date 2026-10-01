@@ -1,10 +1,15 @@
 package com.example.api_inventario.ServiceImpl;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.api_inventario.DTO.SerieHistDTOs.SerieHistMapper;
+import com.example.api_inventario.DTO.SerieHistDTOs.getSerieHistDTO;
+import com.example.api_inventario.DTO.SerieHistDTOs.putSerieHistDTO;
+import com.example.api_inventario.DTO.SerieHistDTOs.saveSerieHistDTO;
 import com.example.api_inventario.Model.SerieHist;
 import com.example.api_inventario.Repository.SerieHistRepository;
 import com.example.api_inventario.Service.SerieHistService;
@@ -13,60 +18,55 @@ import com.example.api_inventario.Service.SerieHistService;
 public class SerieHistServiceImpl implements  SerieHistService {
 
     @Autowired 
-    private SerieHistRepository repo;
+    private SerieHistRepository serieRepo;
 
+    @Autowired
+    private SerieHistMapper serieMapper;
 
-    //Metodos get
-    public List<SerieHist> getAllSerieHist(){
-        return repo.findAll();
-    }; 
-
-    public SerieHist getSerieHistById (Long id_serie){
-
-        return repo.findById(id_serie)
-            .orElseThrow(() -> new RuntimeException("Serie Hist no encontrada con id: " + id_serie));        
+    // Metodos get
+    public List<getSerieHistDTO> getAllSerieHist() {
+        return serieRepo.findAll()
+                .stream()
+                .map(serieMapper::toGetDTO)
+                .collect(Collectors.toList());
     };
-    //Fin metodos get
 
+    public getSerieHistDTO getSerieHistById(Long id_serie_hist) {
+        SerieHist serie = serieRepo.findById(id_serie_hist)
+                .orElseThrow(() -> new RuntimeException("SerieHist no encontrada con id: " + id_serie_hist));
 
-    
-    public SerieHist saveSerieHist(SerieHist serie){
+        return serieMapper.toGetDTO(serie);
+    };
+    // Fin metodos get
 
-        try {   
-            SerieHist n_serie = repo.save(serie);
+    public getSerieHistDTO saveSerieHist(saveSerieHistDTO serieDto) {
+        try {
+            SerieHist serieNueva = serieMapper.toEntityFromSaveDTO(serieDto);
+            SerieHist serieGuardada = serieRepo.save(serieNueva);
 
-            return n_serie;
-            
+            return serieMapper.toGetDTO(serieGuardada);
+
         } catch (Exception e) {
-            
-            throw new RuntimeException("Error al guardar la Serie Hist" + e);
+            throw new RuntimeException("Error al guardar la SerieHist: " + e.getMessage());
         }
-
     };
 
+    public getSerieHistDTO putSerieHist(Long id_serie_hist, putSerieHistDTO serieDto) {
+        SerieHist serieExistente = serieRepo.findById(id_serie_hist)
+                .orElseThrow(() -> new RuntimeException("SerieHist no encontrada con el ID: " + id_serie_hist));
 
-     public SerieHist putSerieHist(SerieHist serie, Long id_serie){
+        serieMapper.updateEntityFromPutDTO(serieDto, serieExistente);
 
-        SerieHist serieExistente = repo.findById(id_serie)
-                .orElseThrow(() -> new RuntimeException("Serie Hist no econtrado con el ID" + id_serie));
-            
-        if (serieExistente.getNombre_serie_hist() != null) {
-            serieExistente.setNombre_serie_hist(serie.getNombre_serie_hist());
+        SerieHist serieActualizada = serieRepo.save(serieExistente);
 
-        };
-
-        return repo.save(serieExistente);
-            
+        return serieMapper.toGetDTO(serieActualizada);
     };
 
-    public void deleteSerieHist(Long id){
+    public void deleteSerieHist(Long id_serie_hist) {
+        SerieHist serie_del = serieRepo.findById(id_serie_hist)
+                .orElseThrow(() -> new RuntimeException("SerieHist no encontrada con el ID: " + id_serie_hist));
 
-        
-        SerieHist serie_del = repo.findById(id)
-            .orElseThrow(() -> new RuntimeException("Serie Hist no encontrado con el ID" + id));
-
-        repo.delete(serie_del);
+        serieRepo.delete(serie_del);
     };
-
 
 }
