@@ -22,7 +22,7 @@ import com.example.api_inventario.Service.HistorietaService;
 import lombok.AllArgsConstructor;
 
 @RestController
-@RequestMapping("/api/historietaRequest")
+@RequestMapping("/api/historietaApi")
 @AllArgsConstructor
 public class HistorietaController {
 

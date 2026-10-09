@@ -20,7 +20,7 @@ import com.example.api_inventario.Service.TipoHistService;
 import lombok.AllArgsConstructor;
 
 @RestController 
-@RequestMapping("/api/tipoHistRequest")
+@RequestMapping("/api/tipoHistApi")
 @AllArgsConstructor
 public class TipoHIstController {
 

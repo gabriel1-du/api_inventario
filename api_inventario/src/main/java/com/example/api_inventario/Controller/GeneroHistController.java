@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 
 @RestController 
-@RequestMapping("/api/generoHistRequest")
+@RequestMapping("/api/generoHistApi")
 @AllArgsConstructor 
 public class GeneroHistController {
 
