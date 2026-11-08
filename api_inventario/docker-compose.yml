@@ -1,0 +1,27 @@
+services:
+  mysql-db:
+    image: mysql:8.0
+    container_name: api-inventario-local
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: hola123
+      MYSQL_DATABASE: inventario_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data_local:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  s3-server:
+    image: chrislusf/seaweedfs:latest
+    container_name: seaweed-s3
+    restart: always
+    command: "server -s3 -filer"
+    ports:
+      - "8333:8333" # Puerto S3 (para tu Spring Boot)
+      - "8888:8888" # Consola Web (para ver tus archivos en el navegador)
+
+volumes:
+  db_data_local:
+  s3-server_data:
+
