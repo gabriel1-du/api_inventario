@@ -1,6 +1,7 @@
 package com.example.api_inventario.DTO.HistoriertaDTOs;
 
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.api_inventario.Model.AutorHist;
 import com.example.api_inventario.Model.GeneroHist;
@@ -11,6 +12,7 @@ import com.example.api_inventario.Repository.AutorHistRepository;
 import com.example.api_inventario.Repository.GeneroHistRepository;
 import com.example.api_inventario.Repository.SerieHistRepository;
 import com.example.api_inventario.Repository.TipoHistRepository;
+import com.example.api_inventario.S3.S3Service;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,6 +25,10 @@ public class HistorietaMapper {
     private final GeneroHistRepository generoRepo;
     private final TipoHistRepository tipoRepo;
     private final SerieHistRepository serieRepo;
+    
+
+    //s3
+    private final S3Service S3;
     //fin repos
 
     
@@ -38,6 +44,9 @@ public class HistorietaMapper {
         dto.setId_historieta(historieta.getId_historieta());
         dto.setNombre_historieta(historieta.getNombre_historieta());
         dto.setDescripcion_historieta(historieta.getDescripcion_historieta());
+        //creacion de la portada usando la subida a la imagen
+        
+
         dto.setPortada(historieta.getPortada());
         dto.setNumero_historieta(historieta.getNumero_historieta());
         dto.setPrecio(historieta.getPrecio());
@@ -78,7 +87,7 @@ public class HistorietaMapper {
         // Atributos propios
         historieta.setNombre_historieta(dto.getNombre_historieta());
         historieta.setDescripcion_historieta(dto.getDescripcion_historieta());
-        historieta.setPortada(dto.getPortada());
+        //historieta.setPortada(dto.getPortada()); ya no recibe portada opoeque se agrega en el servicio
         historieta.setNumero_historieta(dto.getNumero_historieta());
         historieta.setPrecio(dto.getPrecio());
 

@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,7 +13,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.api_inventario.DTO.HistoriertaDTOs.getHistorietaDTO;
 import com.example.api_inventario.DTO.HistoriertaDTOs.putHistorietaDTO;
@@ -48,10 +51,15 @@ public class HistorietaController {
         }
     };
 
-    @PostMapping("/")
-    public ResponseEntity<?> saveHistorieta(@RequestBody saveHistorietaDTO historieta) {
+    
+    @PostMapping(value = "/crear", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> saveHistorieta(
+        
+        @RequestPart("datos") saveHistorietaDTO datosDTO, // JSON con titulo, precio, etc.
+        @RequestPart("imagen") MultipartFile imagen) {     // El archivo físico) {
+        
         try {
-            getHistorietaDTO nuevaHistorieta = historietaService.saveHistorieta(historieta);
+            getHistorietaDTO nuevaHistorieta = historietaService.saveHistorieta(datosDTO, imagen);
             return ResponseEntity.ok(nuevaHistorieta);
 
         } catch (Exception e) {

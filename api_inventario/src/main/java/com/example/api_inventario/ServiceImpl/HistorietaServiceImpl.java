@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.api_inventario.DTO.HistoriertaDTOs.HistorietaMapper;
 import com.example.api_inventario.DTO.HistoriertaDTOs.getHistorietaDTO;
@@ -12,6 +13,7 @@ import com.example.api_inventario.DTO.HistoriertaDTOs.putHistorietaDTO;
 import com.example.api_inventario.DTO.HistoriertaDTOs.saveHistorietaDTO;
 import com.example.api_inventario.Model.Historieta;
 import com.example.api_inventario.Repository.HistorietaRepository;
+import com.example.api_inventario.S3.S3Service;
 import com.example.api_inventario.Service.HistorietaService;
 
 import lombok.RequiredArgsConstructor;
@@ -19,7 +21,8 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class HistorietaServiceImpl implements HistorietaService {
-
+    @Autowired 
+    private final S3Service S3;
     @Autowired
     private final HistorietaRepository historietaRepo;
 
@@ -44,18 +47,24 @@ public class HistorietaServiceImpl implements HistorietaService {
 
 
 
-    public getHistorietaDTO saveHistorieta(saveHistorietaDTO historietaDto) {
+    public getHistorietaDTO saveHistorieta(saveHistorietaDTO dto, MultipartFile imagen) {
+        
         try {
-            // El mapper valida las foreign keys y lanza la excepción si no existen
-            Historieta historietaNueva = historietaMapper.toEntityFromSaveDTO(historietaDto);
+        
+        String rutaImagen = S3.subirPortada(imagen);
 
-            Historieta historietaGuardada = historietaRepo.save(historietaNueva);
+        Historieta historieta = historietaMapper.toEntityFromSaveDTO(dto);
 
-            return historietaMapper.toGetDTO(historietaGuardada);
+        historieta.setPortada(rutaImagen);
+        
+        Historieta guardada = historietaRepo.save(historieta);
+
+        return historietaMapper.toGetDTO(guardada);
 
         } catch (Exception e) {
             throw new RuntimeException("Error al guardar la Historieta: " + e.getMessage());
         }
+
     };
 
 
