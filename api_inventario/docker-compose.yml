@@ -1,4 +1,10 @@
 services:
+  api-inventario:
+    build:
+      context: .
+      dockerfile: DockerFile  # Aquí Compose llama al Dockerfile y descarga JDK/Maven
+    ports:
+      - "8083:8083"
   mysql-db:
     image: mysql:8.0
     container_name: api-inventario-local
@@ -12,14 +18,14 @@ services:
       - db_data_local:/var/lib/mysql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
-  s3-server:
-    image: chrislusf/seaweedfs:latest
-    container_name: seaweed-s3
-    restart: always
-    command: "server -s3 -filer"
-    ports:
-      - "8333:8333" # Puerto S3 (para tu Spring Boot)
-      - "8888:8888" # Consola Web (para ver tus archivos en el navegador)
+    s3-server:
+      image: chrislusf/seaweedfs:latest
+      container_name: seaweed-s3
+      restart: always
+      command: "server -s3 -filer"
+      ports:
+        - "8333:8333" # Puerto S3 (para tu Spring Boot)
+        - "8888:8888" # Consola Web (para ver tus archivos en el navegador)
 
 volumes:
   db_data_local:
