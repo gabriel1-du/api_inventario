@@ -3,12 +3,15 @@ package com.example.api_inventario.S3;
 import java.io.IOException;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.annotation.PostConstruct;
 import lombok.Data;
+import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
@@ -21,6 +24,8 @@ import software.amazon.awssdk.services.s3.S3Client;
 @Service 
 @Data 
 public class S3Service {
+
+    private static final Logger log = LoggerFactory.getLogger(S3Service.class);
 
     private S3Client s3;
 
@@ -44,16 +49,19 @@ public class S3Service {
     @PostConstruct
     public void inicializarBucket() {
         try {
-            // Intenta buscar el bucket
             s3.headBucket(HeadBucketRequest.builder().bucket(bucketName).build());
+            log.info("Bucket '{}' disponible", bucketName);
         } catch (S3Exception e) {
-            // Si da error 404 (No encontrado) o 403 (Denegado), lo creamos
             if (e.statusCode() == 404 || e.statusCode() == 403) {
                 s3.createBucket(CreateBucketRequest.builder().bucket(bucketName).build());
-                System.out.println(" Bucket '" + bucketName + "' creado exitosamente en SeaweedFS.");
+                log.info("Bucket '{}' creado exitosamente", bucketName);
             } else {
-                throw e;
+                log.warn("No se pudo verificar el bucket '{}' (HTTP {}). La app sigue activa: {}",
+                        bucketName, e.statusCode(), e.getMessage());
             }
+        } catch (SdkClientException e) {
+            // Si S3 no responde, la app debe arrancar igual (las subidas fallarán hasta que vuelva).
+            log.warn("S3 no disponible. La app arranca igual: {}", e.getMessage());
         }
     }
 

@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.AwsSessionCredentials;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -43,12 +44,15 @@ public class S3Config {
                            AwsBasicCredentials.create("local", "local")))
                    .forcePathStyle(true);
         } 
-        // Si están las credenciales de Voclabs en el archivo .env
-        else if (accessKey != null && !accessKey.isBlank() && sessionToken != null && !sessionToken.isBlank()) {
-            builder.credentialsProvider(StaticCredentialsProvider.create(
-                    AwsSessionCredentials.create(accessKey.trim(), secretKey.trim(), sessionToken.trim())));
-        } 
-        // Si corre en servidor AWS EC2 con IAM Role (sin .env)
+        // Credenciales fijas (usuario IAM). El session token es opcional.
+        else if (accessKey != null && !accessKey.isBlank()
+                && secretKey != null && !secretKey.isBlank()) {
+            AwsCredentials credentials = (sessionToken != null && !sessionToken.isBlank())
+                    ? AwsSessionCredentials.create(accessKey.trim(), secretKey.trim(), sessionToken.trim())
+                    : AwsBasicCredentials.create(accessKey.trim(), secretKey.trim());
+            builder.credentialsProvider(StaticCredentialsProvider.create(credentials));
+        }
+        // Si corre en EC2 con IAM Role (sin credenciales en .env)
         else {
             builder.credentialsProvider(DefaultCredentialsProvider.create());
         }

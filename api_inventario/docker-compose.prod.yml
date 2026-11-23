@@ -1,0 +1,57 @@
+# =============================================================================
+# PRODUCCIÓN - EC2
+# Solo levanta el microservicio. NO levanta MySQL ni SeaweedFS:
+# RDS y AWS S3 se alcanzan por variables de entorno (.env.prod).
+#
+# Uso en la instancia:
+#   cp .env.prod.example .env.prod      # editar con datos reales
+#   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+#   docker compose -f docker-compose.prod.yml --env-file .env.prod logs -f
+#
+# Si usás imagen ya publicada (ECR/DockerHub) en vez de buildear en la EC2,
+# reemplazá el bloque "build:" por:  image: TU_ECR/api-inventario:prod
+# =============================================================================
+
+services:
+  api-inventario:
+    image: api-inventario:prod
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: api-inventario-prod
+    restart: unless-stopped
+
+    # RDS, bucket, región, credenciales IAM, etc. vienen de acá
+    env_file:
+      - .env.prod
+
+    environment:
+      # Fuerza AWS real: anula un AWS_S3_ENDPOINT local que haya quedado copiado.
+      AWS_S3_ENDPOINT: ""
+      AWS_REGION: "${AWS_REGION:-us-east-1}"
+      SPRING_PROFILES_ACTIVE: "${SPRING_PROFILES_ACTIVE:-prod}"
+
+      SPRING_JPA_SHOW_SQL: "false"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: "${SPRING_JPA_HIBERNATE_DDL_AUTO:-update}"
+
+      # JVM acotada para EC2 pequeña (t2/t3.micro)
+      JAVA_TOOL_OPTIONS: "${JAVA_TOOL_OPTIONS:--Xms256m -Xmx512m -Djava.awt.headless=true}"
+      TZ: "${TZ:-UTC}"
+
+    ports:
+      # HOST_PORT = puerto expuesto en la EC2 / ALB; SERVER_PORT = puerto de la app
+      - "${HOST_PORT:-8083}:${SERVER_PORT:-8083}"
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+    healthcheck:
+      # eclipse-temurin:alpine trae busybox nc (no necesitamos Spring Actuator).
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 $${SERVER_PORT:-8083} || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
