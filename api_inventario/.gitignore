@@ -37,6 +37,5 @@ build/
 .env.*
 !.env.example
 !.env.prod.example
-*.env.local
 .env.local
 .env.*.local

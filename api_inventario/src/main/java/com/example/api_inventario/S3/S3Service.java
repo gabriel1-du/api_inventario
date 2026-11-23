@@ -49,22 +49,19 @@ public class S3Service {
     @PostConstruct
     public void inicializarBucket() {
         try {
-            // Intenta buscar el bucket
             s3.headBucket(HeadBucketRequest.builder().bucket(bucketName).build());
-            log.info("Bucket '{}' disponible en {}", bucketName, endpoint);
+            log.info("Bucket '{}' disponible", bucketName);
         } catch (S3Exception e) {
-            // Si da error 404 (No encontrado) o 403 (Denegado), lo creamos
             if (e.statusCode() == 404 || e.statusCode() == 403) {
                 s3.createBucket(CreateBucketRequest.builder().bucket(bucketName).build());
-                log.info("Bucket '{}' creado exitosamente en SeaweedFS.", bucketName);
+                log.info("Bucket '{}' creado exitosamente", bucketName);
             } else {
-                log.warn("No se pudo verificar el bucket '{}' (HTTP {}). La app seguirá activa: {}",
+                log.warn("No se pudo verificar el bucket '{}' (HTTP {}). La app sigue activa: {}",
                         bucketName, e.statusCode(), e.getMessage());
             }
         } catch (SdkClientException e) {
-            // Si SeaweedFS/AWS no está levantado, NO queremos que la app deje de arrancar
-            log.warn("S3 no disponible en '{}'. La app arranca igual, pero las subidas fallarán hasta que esté activo: {}",
-                    endpoint, e.getMessage());
+            // Si S3 no responde, la app debe arrancar igual (las subidas fallarán hasta que vuelva).
+            log.warn("S3 no disponible. La app arranca igual: {}", e.getMessage());
         }
     }
 

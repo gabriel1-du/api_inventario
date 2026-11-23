@@ -44,8 +44,7 @@ public class S3Config {
                            AwsBasicCredentials.create("local", "local")))
                    .forcePathStyle(true);
         } 
-        // Credenciales fijas (usuario IAM). El session token es opcional:
-        // sin token se usa access key + secret; con token se usa sesión temporal.
+        // Credenciales fijas (usuario IAM). El session token es opcional.
         else if (accessKey != null && !accessKey.isBlank()
                 && secretKey != null && !secretKey.isBlank()) {
             AwsCredentials credentials = (sessionToken != null && !sessionToken.isBlank())

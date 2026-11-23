@@ -1,4 +1,4 @@
-# Nunca mandar secretos ni artefactos locales al daemon de Docker
+# No enviar secretos ni artefactos locales al daemon de Docker
 .env
 .env.*
 !.env.prod.example
