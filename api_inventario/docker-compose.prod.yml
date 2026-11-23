@@ -11,6 +11,7 @@
 # Si usás imagen ya publicada (ECR/DockerHub) en vez de buildear en la EC2,
 # reemplazá el bloque "build:" por:  image: TU_ECR/api-inventario:prod
 # =============================================================================
+
 services:
   api-inventario:
     image: api-inventario:prod
