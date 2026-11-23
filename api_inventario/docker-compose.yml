@@ -2,9 +2,24 @@ services:
   api-inventario:
     build:
       context: .
-      dockerfile: DockerFile  # Aquí Compose llama al Dockerfile y descarga JDK/Maven
+      dockerfile: Dockerfile
     ports:
       - "8083:8083"
+    environment:
+      # Dentro de Docker el host de MySQL es el nombre del servicio, no localhost
+      DB_HOST: mysql-db
+      DB_PORT: 3306
+      DB_NAME: inventario_db
+      DB_USER: root
+      DB_PASSWORD: hola123
+      # Endpoint interno de SeaweedFS (S3 local)
+      AWS_S3_ENDPOINT: http://s3-server:8333
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      s3-server:
+        condition: service_started
+
   mysql-db:
     image: mysql:8.0
     container_name: api-inventario-local
@@ -13,21 +28,32 @@ services:
       MYSQL_ROOT_PASSWORD: hola123
       MYSQL_DATABASE: inventario_db
     ports:
-      - "3306:3306"
+      # Si otro contenedor ocupa el 3306, dejamos 3307 (ver scripts/check-db-port.sh).
+      # Cambiá DB_PORT en .env a 3306 cuando liberes el puerto.
+      - "${DB_PORT:-3307}:3306"
     volumes:
       - db_data_local:/var/lib/mysql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
 
-    s3-server:
-      image: chrislusf/seaweedfs:latest
-      container_name: seaweed-s3
-      restart: always
-      command: "server -s3 -filer"
-      ports:
-        - "8333:8333" # Puerto S3 (para tu Spring Boot)
-        - "8888:8888" # Consola Web (para ver tus archivos en el navegador)
+  s3-server:
+    image: chrislusf/seaweedfs:latest
+    container_name: seaweed-s3
+    restart: always
+    command: "server -s3 -filer -dir=/data"
+    ports:
+      # Internos siempre 8333/8888; en el host se pueden cambiar desde .env
+      # (tu ApiGateway usa el 8888, por eso el default del host es 8890)
+      - "${S3_API_PORT:-8333}:8333"       # Puerto S3 (para tu Spring Boot)
+      - "${S3_CONSOLE_PORT:-8890}:8888"   # Consola Web (navegador)
+    volumes:
+      - s3-server_data:/data
 
 volumes:
   db_data_local:
   s3-server_data:
-
