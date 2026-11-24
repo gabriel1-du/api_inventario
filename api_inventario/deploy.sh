@@ -7,14 +7,21 @@ set -euo pipefail
 # Se ejecuta desde cualquier lado; siempre trabaja en la raíz del proyecto.
 #
 # Uso:
-#   ./otros/deploy.sh [rama]            Despliega de verdad
-#   ./otros/deploy.sh [rama] --check    Solo valida entorno/.env/compose (no modifica nada)
-#   ./otros/deploy.sh [rama] --dry-run  Muestra lo que haría, sin git pull ni docker up
-#   ./otros/deploy.sh --help
+#   ./deploy.sh [rama]            Despliega de verdad
+#   ./deploy.sh [rama] --check    Solo valida entorno/.env/compose (no modifica nada)
+#   ./deploy.sh [rama] --dry-run  Muestra lo que haría, sin git pull ni docker up
+#   ./deploy.sh --help
 # ============================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+# El script puede estar en la raíz o dentro de otros/.
+# Si el compose está junto al script, esa es la raíz; si no, subimos un nivel.
+if [[ -f "${SCRIPT_DIR}/docker-compose.prod.yml" ]]; then
+  PROJECT_ROOT="${SCRIPT_DIR}"
+else
+  PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+fi
 cd "${PROJECT_ROOT}"
 
 # Inicialización de variables
@@ -28,10 +35,10 @@ HEALTH_PATH="/api/generoHistApi/"
 usage() {
   cat <<'EOF'
 Uso:
-  ./otros/deploy.sh [rama]            Despliega de verdad
-  ./otros/deploy.sh [rama] --check    Solo valida entorno/.env/compose (no modifica nada)
-  ./otros/deploy.sh [rama] --dry-run  Muestra lo que haría, sin git pull ni docker up
-  ./otros/deploy.sh --help
+  ./deploy.sh [rama]            Despliega de verdad
+  ./deploy.sh [rama] --check    Solo valida entorno/.env/compose (no modifica nada)
+  ./deploy.sh [rama] --dry-run  Muestra lo que haría, sin git pull ni docker up
+  ./deploy.sh --help
 EOF
 }
 
