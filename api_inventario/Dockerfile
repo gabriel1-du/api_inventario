@@ -10,6 +10,11 @@ RUN mvn -B clean package -DskipTests
 # Etapa 2: Ejecución
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
+
+# La JVM respeta el límite de memoria del contenedor (mem_limit en docker-compose.prod.yml).
+# Con 768m de límite, el heap máximo queda en ~576 MB (75%).
+ENV JAVA_TOOL_OPTIONS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75 -XX:InitialRAMPercentage=50"
+
 COPY --from=build /app/target/api_inventario-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8083
 ENTRYPOINT ["java", "-jar", "app.jar"]

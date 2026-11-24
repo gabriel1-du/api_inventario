@@ -1,0 +1,6 @@
+cp .env.prod.example .env.prod
+nano .env.prod                 # completar RDS, bucket, región, etc.
+
+./otros/deploy.sh --check      # solo valida, no modifica nada
+./otros/deploy.sh --dry-run    # muestra lo que haría
+./otros/deploy.sh main         # despliega de verdad
