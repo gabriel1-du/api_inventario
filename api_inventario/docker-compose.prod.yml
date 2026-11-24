@@ -1,15 +1,15 @@
 # =============================================================================
-# PRODUCCIÓN - EC2
+# PRODUCCIÓN - EC2 (api_inventario)
+# Adaptado de otros/docker-compose.prod.yml + configuración AWS del microservicio.
+# Ubicado en la raíz del proyecto, al mismo nivel que .dockerignore.
+#
 # Solo levanta el microservicio. NO levanta MySQL ni SeaweedFS:
 # RDS y AWS S3 se alcanzan por variables de entorno (.env.prod).
 #
-# Uso en la instancia:
-#   cp .env.prod.example .env.prod      # editar con datos reales
+# Uso:
+#   cp .env.prod.example .env.prod      # editar con los datos reales
 #   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
-#   docker compose -f docker-compose.prod.yml --env-file .env.prod logs -f
-#
-# Si usás imagen ya publicada (ECR/DockerHub) en vez de buildear en la EC2,
-# reemplazá el bloque "build:" por:  image: TU_ECR/api-inventario:prod
+#   ./otros/deploy.sh main
 # =============================================================================
 
 services:
@@ -21,6 +21,13 @@ services:
     container_name: api-inventario-prod
     restart: unless-stopped
 
+    # ---------- Control de RAM para una EC2 pequeña (t3.micro / 1 GB) ----------
+    # Tope real del contenedor: 768 MiB. La JVM usa el 75% (~576 MB de heap)
+    # gracias a MaxRAMPercentage configurado en el Dockerfile.
+    mem_limit: 768m
+    mem_reservation: 512m
+    # -------------------------------------------------------------------------
+
     # RDS, bucket, región, credenciales IAM, etc. vienen de acá
     env_file:
       - .env.prod
@@ -29,13 +36,13 @@ services:
       # Fuerza AWS real: anula un AWS_S3_ENDPOINT local que haya quedado copiado.
       AWS_S3_ENDPOINT: ""
       AWS_REGION: "${AWS_REGION:-us-east-1}"
-      SPRING_PROFILES_ACTIVE: "${SPRING_PROFILES_ACTIVE:-prod}"
+      SPRING_PROFILES_ACTIVE: prod
+
+      # JVM: hereda el default del Dockerfile, pero se puede override desde .env.prod
+      JAVA_TOOL_OPTIONS: "${JAVA_TOOL_OPTIONS:--XX:+UseContainerSupport -XX:MaxRAMPercentage=75 -XX:InitialRAMPercentage=50}"
 
       SPRING_JPA_SHOW_SQL: "false"
       SPRING_JPA_HIBERNATE_DDL_AUTO: "${SPRING_JPA_HIBERNATE_DDL_AUTO:-update}"
-
-      # JVM acotada para EC2 pequeña (t2/t3.micro)
-      JAVA_TOOL_OPTIONS: "${JAVA_TOOL_OPTIONS:--Xms256m -Xmx512m -Djava.awt.headless=true}"
       TZ: "${TZ:-UTC}"
 
     ports:
