@@ -39,3 +39,7 @@ build/
 !.env.prod.example
 .env.local
 .env.*.local
+
+### Contenido local (no subir al repositorio) ###
+**/otros/
+.otros/
