@@ -32,6 +32,9 @@ ENV_FILE=".env.prod"
 SERVICIO="api-inventario"
 HEALTH_PATH="/api/generoHistApi/"
 
+# Comando Docker Compose reutilizable (siempre con el archivo y el env correctos)
+DC=(sudo docker compose -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}")
+
 usage() {
   cat <<'EOF'
 Uso:
@@ -107,7 +110,7 @@ fi
 
 # Validación real del compose (interpola .env.prod y comprueba la sintaxis)
 if ! docker compose -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}" config -q; then
-  log "ERROR: ${COMPOSE_FILE} no es válido"
+  log "ERROR: ${COMPOSE_FILE} no es válido con ${ENV_FILE}"
   exit 1
 fi
 log "Compose válido ✅"
@@ -129,7 +132,7 @@ fi
 run git pull origin "${RAMA}"
 
 # --- 4. CONSTRUCCIÓN Y ARRANQUE ---
-run sudo docker compose -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}" up -d --build
+run "${DC[@]}" up -d --build
 run sudo docker image prune -f
 
 # --- 5. COMPROBACIÓN (solo en modo real) ---
@@ -151,7 +154,7 @@ if [[ "$MODO" == "normal" ]]; then
     if [[ "$OK" -eq 1 ]]; then
       log "Healthcheck OK ✅"
     else
-      log "ERROR: la API no respondió. Revisa: sudo docker compose -f ${COMPOSE_FILE} logs ${SERVICIO}"
+      log "ERROR: la API no respondió. Revisa: ${DC[*]} logs ${SERVICIO}"
       exit 1
     fi
   else
@@ -159,8 +162,13 @@ if [[ "$MODO" == "normal" ]]; then
   fi
 
   log "Últimas líneas de Spring Boot:"
-  sudo docker compose -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}" logs --tail=50 "${SERVICIO}"
-  sudo docker compose -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}" ps
+  "${DC[@]}" logs --tail=50 "${SERVICIO}"
+  "${DC[@]}" ps
+
+  log "Comandos útiles:"
+  log "  Seguir logs:  ${DC[*]} logs -f ${SERVICIO}"
+  log "  Estado:       ${DC[*]} ps"
+  log "  Reiniciar:    ${DC[*]} restart ${SERVICIO}"
 fi
 
 log "Despliegue finalizado (modo: ${MODO})"

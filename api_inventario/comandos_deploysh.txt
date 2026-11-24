@@ -1,6 +1,14 @@
+cd ~/api_inventario/api_inventario
+
 cp .env.prod.example .env.prod
 nano .env.prod                 # completar RDS, bucket, región, etc.
 
-./otros/deploy.sh --check      # solo valida, no modifica nada
-./otros/deploy.sh --dry-run    # muestra lo que haría
-./otros/deploy.sh main         # despliega de verdad
+bash -n deploy.sh
+./deploy.sh --check            # solo valida, no modifica nada
+./deploy.sh --dry-run          # muestra lo que haría
+./deploy.sh main               # despliega de verdad
+
+# Comandos útiles después del deploy:
+sudo docker compose -f docker-compose.prod.yml --env-file .env.prod logs -f api-inventario
+sudo docker compose -f docker-compose.prod.yml --env-file .env.prod ps
+sudo docker compose -f docker-compose.prod.yml --env-file .env.prod restart api-inventario
